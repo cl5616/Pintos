@@ -1,0 +1,54 @@
+shared memory
+	//supt* : list
+	//hash clear : remove list
+	//store : frame evict -> all supt change attribute
+	//load : load the current one is fine
+	page_fault : if frame already exist, if exist, use that frame
+		//store ROM id in frame table entry
+		//if the frame is not ROM, id is 0
+		//traverse, if there is an entry with identical ID, use that frame
+		//store that ID in supt union for SRC_RAM
+		//when lazy_load, allocate an id, id++
+		lazy_load/load pls consider if that page already exist
+		global list file_name being opened(free using counter, lock)
+			map to hash
+			offset map rom id
+	change lazy load strategy
+
+
+
+
+>> A3: (2 marks)
+
+>> How have you implemented sharing of read only pages?
+
+We have maintained a global data structure that maps executable file name and user virtual address of a specific page to a rom id. If the page is writable, rom id is 0; if the page is ROM, rom id is a positive number.
+Such rom id would be stored in frame table element and suplementary page table element when suplementary page table is to be loaded or to be swapped. When a page is to be loaded from swap or from file system, we will check if the rom id is already in the loaded frame. If it is already loaded, install that page to user memory. If not, load as usual and set rom id in frame table entry as the rom id stored in the suplementary frame table entry.
+The rom id is allocated when segment is loaded in load segment if this ROM page is not loaded already.
+
+>> A5: (2 marks)
+
+>> Why did you choose the data structure(s) that you did for
+
+>> representing the page table and frame table?
+
+We use hash structure for page table and array for frame table. For page table, using hash allows us to have average O(1) time complexity when doing search and insert. For frame table, we store an array in the free memory above 1MB. The reason why I use an array is that array can have O(1) complexity to edit any of the element. However, if we use hash for frame table, we must add a lock when accessing the hash table, but we cannot do so in thread_yield or any other function being called when switching threads.
+Array may waste some space, but it is not so much. And if all of the memory is used, no space is wasted for array frame table.
+
+>> B8: (2 marks)
+
+>> There is an obvious trade-off between parallelism and the complexity
+
+>> of your synchronisation methods. Explain where your design falls
+
+>> along this continuum and why you chose to design it this way.
+
+We only used one lock for the whole system of all suplementary page tables and frame table, so our design falls into simplicity side. Because we would do swap in eviction, we may change the content of suplementary page table entry of another different process. If we use "smaller" locks, it is possible for some dead lock or race condition to occur.
+
+
+>> C2: (3 marks)
+
+>> Explain how you determine whether a new file mapping overlaps with
+>> any existing segment. How might this interact with stack growth?
+
+We will traverse all the page that is required to map the file into memory, and check if the page is in suplementary page table(already being occupied by existing memory) and if the page is above LOWEST_STACK_TOP(may overlap with stack or be a kernel addresss). If it is, return error since that page is already being occupied.

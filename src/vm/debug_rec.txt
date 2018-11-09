@@ -1,0 +1,108 @@
+0x271025
+
+entry -> + 0xc0000000
+&entry -> + 0xc0000000 -> overflow ->
+
+  0xc002ec75 <+130>:	jne    0xc002ed0d <store_page+282>
+   0xc002ec7b <+136>:	sub    esp,0x8
+   0xc002ec7e <+139>:	push   ebx
+   0xc002ec7f <+140>:	push   DWORD PTR ds:0xc003a584
+   0xc002ec85 <+146>:	call   0xc00292dd <bitmap_mark>
+   0xc002ec8a <+151>:	mov    edx,DWORD PTR [edi+0x24]
+   0xc002ec8d <+154>:	mov    eax,DWORD PTR [edx]
+   0xc002ec8f <+156>:	and    eax,0xfffff000
+   0xc002ec94 <+161>:	add    esp,0x10
+   0xc002ec97 <+164>:	cmp    eax,0xbfffffff
+   0xc002ec9c <+169>:	jbe    0xc002ecbc <store_page+201>
+   0xc002ec9e <+171>:	sub    esp,0xc
+   0xc002eca1 <+174>:	push   0xc00318fb
+   0xc002eca6 <+179>:	push   0xc0030b9e
+   0xc002ecab <+184>:	push   0xc0030a4c
+   0xc002ecb0 <+189>:	push   0x50
+   0xc002ecb2 <+191>:	push   0xc0030be1
+   0xc002ecb7 <+196>:	call   0xc002864c <debug_panic>
+   0xc002ecbc <+201>:	mov    DWORD PTR [ebp-0x20],edx
+   0xc002ecbf <+204>:	mov    eax,DWORD PTR [ebp-0x20]
+   0xc002ecc2 <+207>:	and    DWORD PTR [eax],0xfffffffe
+   0xc002ecc5 <+210>:	lea    ecx,[ebx*8+0x0]
+   0xc002eccc <+217>:	mov    DWORD PTR [ebp-0x2c],ecx
+   0xc002eccf <+220>:	lea    esi,[eax-0x40000000]
+   0xc002ecd5 <+226>:	sub    eax,0x3ffff000
+   0xc002ecda <+231>:	mov    DWORD PTR [ebp-0x30],eax
+   0xc002ecdd <+234>:	sub    esp,0x4
+=> 0xc002ece0 <+237>:	push   esi
+   0xc002ece1 <+238>:	push   DWORD PTR [ebp-0x2c]
+   0xc002ece4 <+241>:	push   DWORD PTR ds:0xc003a58c
+   0xc002ecea <+247>:	call   0xc0024ef7 <block_write>
+   0xc002ecef <+252>:	add    DWORD PTR [ebp-0x2c],0x1
+   0xc002ecf3 <+256>:	add    esi,0x200
+   0xc002ecf9 <+262>:	add    esp,0x10
+   0xc002ecfc <+265>:	cmp    esi,DWORD PTR [ebp-0x30]
+
+
+0x8049ca0 fault
+
+pwndbg> p *supt
+$9 = {
+  userpage_addr = 0x8049000,
+  elem = {
+    list_elem = {
+      prev = 0xc011bd1c,
+      next = 0xc0113390
+    }
+  },
+  src = SRC_SWAP,
+  u = {
+    swap_idx = 2,
+    kpage = 0x2,
+    m_page = {
+      kpage = 0x2,
+      f = 0x0,
+      size = 4096,
+      ofs = 4096,
+      page_read_bytes = 0
+    },
+    load_info = {
+      file = 0x2,
+      writable = false,
+      start_read = 4096,
+      page_read_bytes = 4096
+    }
+  },
+  pt_entry = 0xc011f124
+}
+
+
+pwndbg> p page_to_swap 
+$11 = (void *) 0xc0275000
+
+pwndbg> p *frame_to_be_swapped->u_page_sup
+$12 = {
+  userpage_addr = 0x81b7000, 
+  elem = {
+    list_elem = {
+      prev = 0xc0111e50, 
+      next = 0xc011b9d4
+    }
+  }, 
+  src = SRC_RAM, 
+  u = {
+    swap_idx = 3223801856, 
+    kpage = 0xc0275000, 
+    m_page = {
+      kpage = 0xc0275000, 
+      f = 0x1, 
+      size = 12704, 
+      ofs = 0, 
+      page_read_bytes = 0
+    }, 
+    load_info = {
+      file = 0xc0275000, 
+      writable = true, 
+      start_read = 12704, 
+      page_read_bytes = 0
+    }
+  }, 
+  pt_entry = 0xc011f6dc
+}
+
